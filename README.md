@@ -1,6 +1,6 @@
 # script.module.horus MOD
 
-The mod allows reading specially formatted channel list ONLY from https://pastebin.com. The format should be CHANNEL_NAME\nACESTREAM_ID, that is, alternating lines for name and id. Example of pastebin channel list format:
+This MOD allows reading specially formatted channel list ONLY from https://pastebin.com. The format should be CHANNEL_NAME\nACESTREAM_ID, that is, alternating lines for name and id. Example of pastebin channel list format:
 
 Liga Tv Bar 1080  
 268361065992567230d35c0d62f02ffdebe8be2d  
