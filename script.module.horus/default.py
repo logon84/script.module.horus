@@ -631,17 +631,25 @@ def search(url):
 
     try:
         data = six.ensure_str(urllib_request.urlopen(url).read())
-        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
 
         if data:
             if url.startswith('https://ipfs.io/'):
+                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                 patron = '<a href="(/ipfs/[^"]+acelive)">(\d*)'
                 for ace,n in re.findall(patron, data, re.I):
                     itemlist.append(Item(label="Arenavisión Canal " + n,
                                          action='play',
                                          url="https://ipfs.io" + ace))
+            elif url.startswith('https://pastebin'):
+                for n, it in enumerate(data.split('\n')):
+                   if (n % 2) == 0:
+                      name = it
+                   else:
+                      id = re.findall('([0-9a-f]{40})', it, re.I)[0]
+                      itemlist.append(Item(label=name ,action='play',id=id))
             else:
                 try:
+                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                     for n, it in enumerate(eval(re.findall('(\[.*?])', data)[0])):
                         label = it.get("name", it.get("title", it.get("label")))
                         id = it.get("id", it.get("url"))
