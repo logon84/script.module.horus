@@ -641,12 +641,15 @@ def search(url):
                                          action='play',
                                          url="https://ipfs.io" + ace))
             elif url.startswith('https://pastebin'):
-                for n, it in enumerate(data.split('\n')):
-                   if (n % 2) == 0:
-                      name = it
-                   else:
-                      id = re.findall('([0-9a-f]{40})', it, re.I)[0]
-                      itemlist.append(Item(label=name ,action='play',id=id))
+                counter = 0
+                for it in data.split('\n'):
+                   if len(it) > 1:
+                       if (counter % 2) == 0:
+                          name = it
+                       else:
+                          id = re.findall('([0-9a-f]{40})', it, re.I)[0]
+                          itemlist.append(Item(label=name ,action='play',id=id))
+                       counter = counter + 1
             else:
                 try:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
@@ -861,7 +864,6 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
-
 
 
 
