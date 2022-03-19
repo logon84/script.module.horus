@@ -650,6 +650,21 @@ def search(url):
                           id = re.findall('([0-9a-f]{40})', it, re.I)[0]
                           itemlist.append(Item(label=name ,action='play',id=id))
                        counter = counter + 1
+            elif url.startswith('https://www.socialcreator.com'):
+                data = data.split('<tr>')
+                ids = []
+                for tr in data:
+                    if "AAAAAElFTkSuQmCC" in tr:
+                        td_list = tr.split("<td ")
+                        for x in td_list:
+                            if "acestream://" in x and re.findall('([0-9a-f]{40})', x, re.I):
+                                name = x.split("alt=\"")[1].split("\"")[0]
+                                if len(name) == 0:
+                                    name = "NO_NAME"
+                                id = re.findall('([0-9a-f]{40})', x, re.I)[0]
+                                if id not in ids:
+                                   ids.append(id)
+                                   itemlist.append(Item(label=name ,action='play',id=id))
             else:
                 try:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
