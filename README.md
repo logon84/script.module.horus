@@ -27,3 +27,8 @@ M. Deportes 1080
 M. Deportes 1 1080  
 b2c349035181772990ef2acba88a582833667f88  
  powered by acestream_spanish  
+
+
+
+[![Donate](https://www.paypalobjects.com/es_ES/ES/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ER2LTNM5LZDTY)  
+BTC address: 12cQuFn7yMSfDB1uKPGKLMQ7XSj1XF2sVA
