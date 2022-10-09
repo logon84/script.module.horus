@@ -630,7 +630,8 @@ def search(url):
     #   http://acetv.org/js/data.json
 
     try:
-        data = six.ensure_str(urllib_request.urlopen(url).read())
+        req = urllib_request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
+        data = six.ensure_str(urllib_request.urlopen(req).read())
 
         if data:
             if url.startswith('https://ipfs.io/'):
@@ -650,22 +651,20 @@ def search(url):
                           id = re.findall('([0-9a-f]{40})', it, re.I)[0]
                           itemlist.append(Item(label=name ,action='play',id=id))
                        counter = counter + 1
-            elif url.startswith('https://www.socialcreator.com'):
-                data = data.split('<tr>')
+            elif url.startswith('https://futbolgratis2'):
+                data = re.sub("(<!--.*?-->)", "", data, flags=re.DOTALL)
+                data = data.split("<a href=")
                 ids = []
-                for tr in data:
-                    if "AAAAAElFTkSuQmCC" in tr:
-                        td_list = tr.split("<td ")
-                        for x in td_list:
-                            if "acestream://" in x and re.findall('([0-9a-f]{40})', x, re.I):
-                                name = x.split("alt=\"")[1].split("\"")[0]
-                                if len(name) == 0:
-                                    name = "NO_NAME"
-                                id = re.findall('([0-9a-f]{40})', x, re.I)[0]
-                                if id not in ids:
+                for href in data:
+                     if "acestream://" in href:
+                         if re.findall('([0-9a-f]{40})', href, re.I):
+                             name = href.split("rel=\"nofollow\">")[1].split("</a><br>")[0]
+                             id = re.findall('([0-9a-f]{40})', href, re.I)[0]
+                             if id not in ids:
                                    ids.append(id)
                                    itemlist.append(Item(label=name ,action='play',id=id))
             else:
+                
                 try:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                     for n, it in enumerate(eval(re.findall('(\[.*?])', data)[0])):
@@ -682,6 +681,7 @@ def search(url):
                         itemlist.append(new_item)
 
                 except:
+                    
                     itemlist = []
                     for patron in [r"acestream://([0-9a-f]{40})", r'(?:"|>)([0-9a-f]{40})(?:"|<)']:
                         n = 1
@@ -879,6 +879,3 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
-
-
-
