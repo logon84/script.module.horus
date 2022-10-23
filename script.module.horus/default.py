@@ -651,7 +651,7 @@ def search(url):
                           id = re.findall('([0-9a-f]{40})', it, re.I)[0]
                           itemlist.append(Item(label=name ,action='play',id=id))
                        counter = counter + 1
-            elif url.startswith('https://futbolgratis'):
+            elif url.startswith('https://') and "futbol" in url and "gratis" in url:
                 data = re.sub("(<!--.*?-->)", "", data, flags=re.DOTALL)
                 data = data.split("<a href=")
                 ids = []
@@ -879,6 +879,4 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
-
-
 
