@@ -778,7 +778,7 @@ def run(item):
             if re.findall('^(http|magnet)', input, re.I):
                 url = input
             else:
-                id = input
+                id = input.replace("acestream://","")
 
         if id:
             acestreams(id=id)
@@ -879,4 +879,5 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
+
 
