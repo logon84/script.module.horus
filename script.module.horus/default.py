@@ -641,7 +641,7 @@ def search(url):
                     itemlist.append(Item(label="Arenavisión Canal " + n,
                                          action='play',
                                          url="https://ipfs.io" + ace))
-            elif url.startswith('https://pastebin'):
+            elif url.startswith('https://pastebin') or "192.168." in url:
                 counter = 0
                 for it in data.split('\n'):
                    if len(it) > 1:
@@ -879,5 +879,6 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
+
 
 
