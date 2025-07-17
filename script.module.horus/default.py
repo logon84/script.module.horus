@@ -21,6 +21,9 @@
 #-------------------------------------------------------------------------------
 
 from lib.utils import *
+import base64
+import gzip
+import json
 
 from acestream.engine import Engine
 from acestream.stream import Stream
@@ -619,6 +622,46 @@ def mainmenu():
     return itemlist
 
 
+def ass_decoder(ass_id_or_json):
+    from six.moves import urllib_request
+
+    itemlist = list()
+    ass_id_or_json = ass_id_or_json.replace("ass://","")
+    is_json = 1
+    try:
+        foo = json.loads(ass_id_or_json)
+    except:
+        is_json = 0
+
+    if not is_json:
+    #input is  ASS ID and not json
+        req = urllib_request.Request("https://dns.google/resolve?name={}.elcano.top&type=TXT".format(ass_id_or_json), data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36', 'Accept': 'application/json'})
+        txt = json.loads(six.ensure_str(urllib_request.urlopen(req).read()))["Answer"]
+        for i in range(len(txt)):
+            element = txt[i]["data"]
+            if "H4sIAAAAAAAA" in element:
+            #gz data
+                json_data = gzip.decompress(base64.b64decode(element)).decode("utf-8")
+            else:
+            #base64
+                json_data = base64.b64decode(element).decode("utf-8")
+            itemlist = itemlist + ass_decoder(json_data)
+    else:
+        json_data = json.loads(ass_id_or_json)
+        for i in range(len(json_data)):
+            jsitem = json_data[i]
+            if "subLinks" in str(jsitem):
+                itemlist = itemlist + ass_decoder(json.dumps(jsitem["subLinks"]))
+            elif "ref" in str(jsitem):
+                itemlist = itemlist + ass_decoder(jsitem["ref"])
+            else:
+                if len(jsitem["url"]) >= 40:
+                    itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"]))
+                else:
+                    pass
+    return itemlist
+
+
 def search(url):
     from six.moves import urllib_request
 
@@ -631,60 +674,68 @@ def search(url):
     #   https://raw.githubusercontent.com/digitaimadness/digitaimadness.github.io/59c454b198f65c6e17ae106f1312b8e0be204211/alpaca.tv/ace.world.m3u
 
     try:
-        req = urllib_request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
-        data = six.ensure_str(urllib_request.urlopen(req).read())
+        if url.startswith("ass://"):
+            itemlist = ass_decoder(url)
+        else:
+            req = urllib_request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
+            data = six.ensure_str(urllib_request.urlopen(req).read())
 
-        if data:
-            if url.startswith('https://ipfs.io/'):
-                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-                patron = '<a href="(/ipfs/[^"]+acelive)">(\d*)'
-                for ace,n in re.findall(patron, data, re.I):
-                    itemlist.append(Item(label="Arenavisión Canal " + n,
-                                         action='play',
-                                         url="https://ipfs.io" + ace))
-            elif url.startswith('https://pastebin') or "192.168." in url:
-                counter = 0
-                for it in data.split('\n'):
-                    if len(it) > 1:
-                        if (counter % 2) == 0:
-                            name = it
-                        else:
-                            id = re.findall('([0-9a-f]{40})', it, re.I)[0]
-                            itemlist.append(Item(label=name ,action='play',id=id))
-                        counter = counter + 1
-            else:
-                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-                try:
-                    for n, it in enumerate(eval(re.findall('(\[.*?])', data)[0])):
-                        label = it.get("name", it.get("title", it.get("label")))
-                        id = it.get("id", it.get("url"))
-                        id = re.findall('([0-9a-f]{40})', id, re.I)[0]
-                        icon = it.get("icon", it.get("image", it.get("thumb")))
+            if data:
+                if url.startswith('https://ipfs.io/'):
+                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+                    patron = '<a href="(/ipfs/[^"]+acelive)">(\d*)'
+                    for ace,n in re.findall(patron, data, re.I):
+                        itemlist.append(Item(label="Arenavisión Canal " + n,
+                                             action='play',
+                                             url="https://ipfs.io" + ace))
+                elif url.startswith('https://pastebin') or "192.168." in url:
+                    counter = 0
+                    for it in data.split('\n'):
+                        if len(it) > 1:
+                            if (counter % 2) == 0:
+                                name = it
+                            else:
+                                id = re.findall('([0-9a-f]{40})', it, re.I)[0]
+                                itemlist.append(Item(label=name ,action='play',id=id))
+                            counter = counter + 1
+                elif "elcano.top" in url:
+                    data = json.loads(data.split("linksData = ")[1].split(";")[0])
+                    for link in data["links"]:
+                        if len(link["url"]) >= 40:
+                            itemlist.append(Item(label=link["name"] ,action='play',id=link["url"]))
+                else:
+                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+                    try:
+                        for n, it in enumerate(eval(re.findall('(\[.*?])', data)[0])):
+                            label = it.get("name", it.get("title", it.get("label")))
+                            id = it.get("id", it.get("url"))
+                            id = re.findall('([0-9a-f]{40})', id, re.I)[0]
+                            icon = it.get("icon", it.get("image", it.get("thumb")))
 
-                        new_item = Item(label= label if label else translate(30030) % (n,id), action='play', id=id)
+                            new_item = Item(label= label if label else translate(30030) % (n,id), action='play', id=id)
 
-                        if icon:
-                            new_item.icon = icon
+                            if icon:
+                                new_item.icon = icon
 
-                        itemlist.append(new_item)
-                except:
-                    for patron in [r'#EXTINF:-1.*?id="([^"]+)".*?([0-9a-f]{40})', '#EXTINF:-1,(.*?)http.*?([0-9a-f]{40})']:
-                        for label, id in re.findall(patron, data):
-                            itemlist.append(Item(label=label, action='play', id=id))
-                        if itemlist: break
-
-                    if not itemlist:
-                        itemlist = []
-                        for patron in [r"acestream://([0-9a-f]{40})", r'(?:"|>)([0-9a-f]{40})(?:"|<)']:
-                            n = 1
-                            for id in re.findall(patron, data, re.I):
-                                if id not in ids:
-                                    ids.append(id)
-                                    itemlist.append(Item(label= translate(30030) % (n,id),
-                                                         action='play',
-                                                         id= id))
-                                    n += 1
+                            itemlist.append(new_item)
+                    except:
+                        for patron in [r'#EXTINF:-1.*?id="([^"]+)".*?([0-9a-f]{40})', '#EXTINF:-1,(.*?)http.*?([0-9a-f]{40})']:
+                            for label, id in re.findall(patron, data):
+                                itemlist.append(Item(label=label, action='play', id=id))
                             if itemlist: break
+
+                        if not itemlist:
+                            itemlist = []
+                            for patron in [r"acestream://([0-9a-f]{40})", r'(?:"|>)([0-9a-f]{40})(?:"|<)']:
+                                n = 1
+                                for id in re.findall(patron, data, re.I):
+                                    if id not in ids:
+                                        ids.append(id)
+                                        itemlist.append(Item(label= translate(30030) % (n,id),
+                                                             action='play',
+                                                             id= id))
+                                        n += 1
+                                if itemlist: break
     except: pass
 
     if itemlist:
@@ -741,15 +792,22 @@ def run(item):
                                  plot=it.get('plot')))
 
     elif item.action == "search":
-        url = xbmcgui.Dialog().input(translate(30032),
-                get_setting("last_search", "http://acetv.org/js/data.json"))
-
-        if url:
-            itemlist = search(url)
-            if itemlist:
-                set_setting("last_search", url)
-        else:
-            return
+        url_list = xbmcgui.Dialog().input(translate(30032),get_setting("last_search", "http://acetv.org/js/data.json"))
+        itemlist = list()
+        tmp_itemlist = list()
+        ids = list()
+        for url in url_list.split(";"):
+            if url:
+                tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='play',id=url))
+                tmp_itemlist = tmp_itemlist + search(url)
+                if tmp_itemlist:
+                    set_setting("last_search", url_list)
+            else:
+                return
+        for item in tmp_itemlist:
+            if item.id not in ids:
+                itemlist.append(item)
+                ids.append(item.id)
 
     elif item.action == 'open_settings':
             xbmcaddon.Addon().openSettings()
