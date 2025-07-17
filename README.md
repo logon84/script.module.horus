@@ -6,7 +6,7 @@ Also it is able to read specially formatted channel list if the source is from h
 
 Channel1  
 268361065992567230d35c0d62f02ffdebe8be2d  
-Channel2 
+Channel2  
 2b16391b15b98bd06576cfb7f7be400d3f78f2d1  
 Channel3   
 0ce1373e072d1e8fe6bfb1129d1e11c11c8fe93d  
