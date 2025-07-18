@@ -629,25 +629,28 @@ def ass_decoder(ass_id_or_json):
     ass_id_or_json = ass_id_or_json.replace("ass://","")
     is_json = 1
     try:
-        foo = json.loads(ass_id_or_json)
+        json_data = json.loads(ass_id_or_json)
     except:
         is_json = 0
 
     if not is_json:
     #input is  ASS ID and not json
         req = urllib_request.Request("https://dns.google/resolve?name={}.elcano.top&type=TXT".format(ass_id_or_json), data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36', 'Accept': 'application/json'})
-        txt = json.loads(six.ensure_str(urllib_request.urlopen(req).read()))["Answer"]
-        for i in range(len(txt)):
-            element = txt[i]["data"]
-            if "H4sIAAAAAAAA" in element:
-            #gz data
-                json_data = gzip.decompress(base64.b64decode(element)).decode("utf-8")
-            else:
-            #base64
-                json_data = base64.b64decode(element).decode("utf-8")
-            itemlist = itemlist + ass_decoder(json_data)
+        response = six.ensure_str(urllib_request.urlopen(req).read())
+        if "Answer" in response:
+            txt = json.loads(response)["Answer"]
+            for i in range(len(txt)):
+                element = txt[i]["data"]
+                if "H4sIAAAAAAAA" in element:
+                #gz data
+                    json_data = gzip.decompress(base64.b64decode(element)).decode("utf-8")
+                else:
+                #base64
+                    json_data = base64.b64decode(element).decode("utf-8")
+                itemlist = itemlist + ass_decoder(json_data)
+        else:
+            itemlist.append(Item(label="NONE" ,action='play',id=""))
     else:
-        json_data = json.loads(ass_id_or_json)
         for i in range(len(json_data)):
             jsitem = json_data[i]
             if "subLinks" in str(jsitem):
@@ -658,7 +661,7 @@ def ass_decoder(ass_id_or_json):
                 if len(jsitem["url"]) >= 40:
                     itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"].replace("acestream://","")))
                 else:
-                    pass
+                    xbmc.log("HORUS - Ignoring item: " + str(jsitem))
     return itemlist
 
 
@@ -800,12 +803,12 @@ def run(item):
             if url:
                 tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='play',id=url))
                 tmp_itemlist = tmp_itemlist + search(url)
-                if tmp_itemlist:
+                if len(tmp_itemlist) > len(url_list.split(";")):
                     set_setting("last_search", url_list)
             else:
                 return
         for item in tmp_itemlist:
-            if item.id not in ids:
+            if item.id and item.id not in ids:
                 itemlist.append(item)
                 ids.append(item.id)
 
