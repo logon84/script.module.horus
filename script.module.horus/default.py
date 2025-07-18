@@ -703,7 +703,6 @@ def search(url):
                     for link in data["links"]:
                         if len(link["url"]) >= 40:
                             itemlist.append(Item(label=link["name"] ,action='play',id=link["url"].replace("acestream://","")))
-                            xbmc.log("AAK2 " + str(link["url"]))
                 else:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                     try:
