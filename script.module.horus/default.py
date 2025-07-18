@@ -656,7 +656,7 @@ def ass_decoder(ass_id_or_json):
                 itemlist = itemlist + ass_decoder(jsitem["ref"])
             else:
                 if len(jsitem["url"]) >= 40:
-                    itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"]))
+                    itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"].replace("acestream://","")))
                 else:
                     pass
     return itemlist
@@ -702,7 +702,8 @@ def search(url):
                     data = json.loads(data.split("linksData = ")[1].split(";")[0])
                     for link in data["links"]:
                         if len(link["url"]) >= 40:
-                            itemlist.append(Item(label=link["name"] ,action='play',id=link["url"]))
+                            itemlist.append(Item(label=link["name"] ,action='play',id=link["url"].replace("acestream://","")))
+                            xbmc.log("AAK2 " + str(link["url"]))
                 else:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                     try:
