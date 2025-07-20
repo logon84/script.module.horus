@@ -624,7 +624,7 @@ def mainmenu():
 
 def ass_decoder(ass_id_or_json):
     from six.moves import urllib_request
-    xbmc.log("HORUS - Input2 item: " + str(ass_id_or_json))
+
     itemlist = list()
     is_json = 1
     try:
@@ -650,10 +650,8 @@ def ass_decoder(ass_id_or_json):
         else:
             itemlist.append(Item(label="NONE" ,action='play',id=""))
     else:
-        xbmc.log("HORUS - Input3 item: " + str(ass_id_or_json))
         for i in range(len(json_data)):
             jsitem = json_data[i]
-            xbmc.log("HORUS - Input4 item: " + str(jsitem))
             if "subLinks" in str(jsitem):
                 itemlist = itemlist + ass_decoder(json.dumps(jsitem["subLinks"]))
             elif "ref" in str(jsitem):
