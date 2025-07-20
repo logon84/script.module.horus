@@ -624,9 +624,8 @@ def mainmenu():
 
 def ass_decoder(ass_id_or_json):
     from six.moves import urllib_request
-
+    xbmc.log("HORUS - Input2 item: " + str(ass_id_or_json))
     itemlist = list()
-    ass_id_or_json = ass_id_or_json.replace("ass://","")
     is_json = 1
     try:
         json_data = json.loads(ass_id_or_json)
@@ -635,7 +634,7 @@ def ass_decoder(ass_id_or_json):
 
     if not is_json:
     #input is  ASS ID and not json
-        req = urllib_request.Request("https://dns.google/resolve?name={}.elcano.top&type=TXT".format(ass_id_or_json), data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36', 'Accept': 'application/json'})
+        req = urllib_request.Request("https://dns.google/resolve?name={}.elcano.top&type=TXT".format(ass_id_or_json.replace("ass://","")), data=None, headers={'Accept': 'application/json'})
         response = six.ensure_str(urllib_request.urlopen(req).read())
         if "Answer" in response:
             txt = json.loads(response)["Answer"]
@@ -651,17 +650,21 @@ def ass_decoder(ass_id_or_json):
         else:
             itemlist.append(Item(label="NONE" ,action='play',id=""))
     else:
+        xbmc.log("HORUS - Input3 item: " + str(ass_id_or_json))
         for i in range(len(json_data)):
             jsitem = json_data[i]
+            xbmc.log("HORUS - Input4 item: " + str(jsitem))
             if "subLinks" in str(jsitem):
                 itemlist = itemlist + ass_decoder(json.dumps(jsitem["subLinks"]))
             elif "ref" in str(jsitem):
                 itemlist = itemlist + ass_decoder(jsitem["ref"])
+            elif "url" in str(jsitem):
+                    if len(jsitem["url"]) >= 40:
+                        itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"].replace("acestream://","")))
+                    else:
+                        xbmc.log("HORUS - Ignoring item: " + str(jsitem))
             else:
-                if len(jsitem["url"]) >= 40:
-                    itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"].replace("acestream://","")))
-                else:
-                    xbmc.log("HORUS - Ignoring item: " + str(jsitem))
+                xbmc.log("HORUS - Ignoring item: " + str(jsitem))
     return itemlist
 
 
