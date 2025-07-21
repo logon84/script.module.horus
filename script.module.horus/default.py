@@ -631,38 +631,32 @@ def ass_decoder(ass_id_or_json):
         json_data = json.loads(ass_id_or_json)
     except:
         is_json = 0
-
     if not is_json:
     #input is  ASS ID and not json
         req = urllib_request.Request("https://dns.google/resolve?name={}.elcano.top&type=TXT".format(ass_id_or_json.replace("ass://","")), data=None, headers={'Accept': 'application/json'})
-        response = six.ensure_str(urllib_request.urlopen(req).read())
-        if "Answer" in response:
-            txt = json.loads(response)["Answer"]
-            for i in range(len(txt)):
-                element = txt[i]["data"]
-                if "H4sIAAAAAAAA" in element:
+        response = json.loads(six.ensure_str(urllib_request.urlopen(req).read()))
+        if "Answer" in response.keys():
+            for i in range(len(response["Answer"])):
+                if "H4sIAAAAAAAA" in response["Answer"][i]["data"]:
                 #gz data
-                    json_data = gzip.decompress(base64.b64decode(element)).decode("utf-8")
+                    json_data = gzip.decompress(base64.b64decode(response["Answer"][i]["data"])).decode("utf-8")
                 else:
                 #base64
-                    json_data = base64.b64decode(element).decode("utf-8")
+                    json_data = base64.b64decode(response["Answer"][i]["data"]).decode("utf-8")
                 itemlist = itemlist + ass_decoder(json_data)
         else:
             itemlist.append(Item(label="NONE" ,action='play',id=""))
     else:
         for i in range(len(json_data)):
             jsitem = json_data[i]
-            if "subLinks" in str(jsitem):
+            if "subLinks" in jsitem.keys():
                 itemlist = itemlist + ass_decoder(json.dumps(jsitem["subLinks"]))
-            elif "ref" in str(jsitem):
+            elif "ref" in jsitem.keys():
                 itemlist = itemlist + ass_decoder(jsitem["ref"])
-            elif "url" in str(jsitem):
-                    if len(jsitem["url"]) >= 40:
-                        itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"].replace("acestream://","")))
-                    else:
-                        xbmc.log("HORUS - Ignoring item: " + str(jsitem))
+            elif "url" in jsitem.keys() and len(jsitem["url"]) >= 40:
+                itemlist.append(Item(label=jsitem["name"] ,action='play',id=jsitem["url"].replace("acestream://","")))
             else:
-                xbmc.log("HORUS - Ignoring item: " + str(jsitem))
+                xbmc.log("HORUS - ASS decoder ignored item: " + str(jsitem))
     return itemlist
 
 
