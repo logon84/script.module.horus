@@ -666,10 +666,12 @@ def search(url):
     itemlist = list()
     ids = list()
 
-    # Ejemplos de urls validas:
-    #   https://fastestvpn.com/blog/acestream-channels/
-    #   http://acetv.org/js/data.json
-    #   https://raw.githubusercontent.com/digitaimadness/digitaimadness.github.io/59c454b198f65c6e17ae106f1312b8e0be204211/alpaca.tv/ace.world.m3u
+    # Ejemplos de urls validas: 
+	#   https://shorturl.at/eUEC6
+    #   http://shickat.me
+	#   http://elcano.top
+	#   ass://681fc74c1833d17ffd9a9c59
+	#   ass://682cb7103451b27a40bc9aa2
 
     try:
         if url.startswith("ass://"):
@@ -701,6 +703,14 @@ def search(url):
                     for link in data["links"]:
                         if len(link["url"]) >= 40:
                             itemlist.append(Item(label=link["name"] ,action='play',id=link["url"].replace("acestream://","")))
+                elif "shickat.me" in url:
+                    data = data.split("id=\"canal-list\">")[1].split("<\/section>")[0]
+                    for line in data.split("\n"):
+                        if "canal-nombre" in line:
+                            name = line.split(">")[1].split("<")[0]
+                        elif "acestream-link" in line:
+                            id = line.split("href=\"")[1].split("\"")[0].replace("acestream://","")
+                            itemlist.append(Item(label=name ,action='play',id=id))
                 else:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                     try:
@@ -717,7 +727,7 @@ def search(url):
 
                             itemlist.append(new_item)
                     except:
-                        for patron in [r'#EXTINF:-1.*?id="([^"]+)".*?([0-9a-f]{40})', '#EXTINF:-1,(.*?)http.*?([0-9a-f]{40})']:
+                        for patron in [r'#EXTINF:-1.*?id="([^"]+)".*?([0-9a-f]{40})', '#EXTINF:-1.*?,(.*?)http.*?([0-9a-f]{40})']:
                             for label, id in re.findall(patron, data):
                                 itemlist.append(Item(label=label, action='play', id=id))
                             if itemlist: break
@@ -926,7 +936,3 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
-
-
-
-
