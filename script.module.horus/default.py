@@ -667,11 +667,7 @@ def search(url):
     ids = list()
 
     # Ejemplos de urls validas: 
-	#   https://shorturl.at/eUEC6
-    #   http://shickat.me
-	#   http://elcano.top
-	#   ass://681fc74c1833d17ffd9a9c59
-	#   ass://682cb7103451b27a40bc9aa2
+    #
 
     try:
         if url.startswith("ass://"):
@@ -698,12 +694,12 @@ def search(url):
                                 id = re.findall('([0-9a-f]{40})', it, re.I)[0]
                                 itemlist.append(Item(label=name ,action='play',id=id))
                             counter = counter + 1
-                elif "elcano.top" in url:
+                elif "elcano" in url:
                     data = json.loads(data.split("linksData = ")[1].split(";")[0])
                     for link in data["links"]:
                         if len(link["url"]) >= 40:
                             itemlist.append(Item(label=link["name"] ,action='play',id=link["url"].replace("acestream://","")))
-                elif "shickat.me" in url:
+                elif "shickat" in url:
                     data = data.split("id=\"canal-list\">")[1].split("<\/section>")[0]
                     for line in data.split("\n"):
                         if "canal-nombre" in line:
@@ -746,10 +742,7 @@ def search(url):
                                 if itemlist: break
     except: pass
 
-    if itemlist:
-        return itemlist
-    else:
-        xbmcgui.Dialog().ok(HEADING,  translate(30031) % url)
+    return itemlist
 
 
 def kill_process():
@@ -801,21 +794,24 @@ def run(item):
 
     elif item.action == "search":
         url_list = xbmcgui.Dialog().input(translate(30032),get_setting("last_search", "http://acetv.org/js/data.json"))
-        itemlist = list()
-        tmp_itemlist = list()
-        ids = list()
-        for url in url_list.split(";"):
-            if url:
-                tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='play',id=url))
-                tmp_itemlist = tmp_itemlist + search(url)
-                if len(tmp_itemlist) > len(url_list.split(";")):
-                    set_setting("last_search", url_list)
+        if url_list:
+            itemlist = list()
+            tmp_itemlist = list()
+            ids = list()
+            for url in url_list.split(";"):
+                if url:
+                    tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='play',id=url))
+                    tmp_itemlist = tmp_itemlist + search(url)
+            for item in tmp_itemlist:
+                if item.id and item.id not in ids:
+                    itemlist.append(item)
+                    ids.append(item.id)
+            if len(itemlist) > len(url_list.split(";")):
+                set_setting("last_search", url_list)
             else:
-                return
-        for item in tmp_itemlist:
-            if item.id and item.id not in ids:
-                itemlist.append(item)
-                ids.append(item.id)
+                xbmcgui.Dialog().ok(HEADING,  translate(30031) % url_list)
+        else:
+            return
 
     elif item.action == 'open_settings':
             xbmcaddon.Addon().openSettings()
@@ -862,6 +858,8 @@ def run(item):
             listitem.setArt(item.getart())
             if item.plot:
                 listitem.setInfo('video', {'plot': item.plot})
+            else:
+                listitem.setInfo('video', {'plot': item.id})
 
             if item.isPlayable:
                 listitem.setProperty('IsPlayable', 'true')
