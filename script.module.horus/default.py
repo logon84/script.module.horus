@@ -644,8 +644,6 @@ def ass_decoder(ass_id_or_json):
                 #base64
                     json_data = base64.b64decode(response["Answer"][i]["data"]).decode("utf-8")
                 itemlist = itemlist + ass_decoder(json_data)
-        else:
-            itemlist.append(Item(label="NONE" ,action='play',id=""))
     else:
         for i in range(len(json_data)):
             jsitem = json_data[i]
@@ -668,7 +666,8 @@ def search(url):
 
     # Ejemplos de urls validas: 
     #
-
+    if "://" not in url:
+        url = "https://acestreamsearch.net/en/?q={}".format(url)
     try:
         if url.startswith("ass://"):
             itemlist = ass_decoder(url)
@@ -684,6 +683,14 @@ def search(url):
                         itemlist.append(Item(label="Arenavisión Canal " + n,
                                              action='play',
                                              url="https://ipfs.io" + ace))
+                if url.startswith('https://acestreamsearch.net'):
+                    data=data.split("list-group\">")[1].split("</ul>")[0]
+                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+                    patron = '<a href="(.*?)">(\\w*.*?)<'
+                    for channel in re.findall(patron, data, re.I):
+                        itemlist.append(Item(label=channel[1],
+                                             action='play',
+                                             id=channel[0].replace("acestream://","")))
                 elif url.startswith('https://pastebin') or "192.168." in url:
                     counter = 0
                     for it in data.split('\n'):
@@ -803,7 +810,7 @@ def run(item):
                     tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='play',id=url))
                     tmp_itemlist = tmp_itemlist + search(url)
             for item in tmp_itemlist:
-                if item.id and item.id not in ids:
+                if item.id not in ids:
                     itemlist.append(item)
                     ids.append(item.id)
             if len(itemlist) > len(url_list.split(";")):
@@ -856,10 +863,7 @@ def run(item):
             listitem = xbmcgui.ListItem(item.label or item.title)
             listitem.setInfo('video', {'title': item.label or item.title, 'mediatype': 'video'})
             listitem.setArt(item.getart())
-            if item.plot:
-                listitem.setInfo('video', {'plot': item.plot})
-            else:
-                listitem.setInfo('video', {'plot': item.id})
+            listitem.setInfo('video', {'plot': item.plot or item.id})
 
             if item.isPlayable:
                 listitem.setProperty('IsPlayable', 'true')
