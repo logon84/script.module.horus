@@ -666,10 +666,25 @@ def search(url):
 
     # Ejemplos de urls validas: 
     #
-    if "://" not in url:
-        url = "https://acestreamsearch.net/en/?q={}".format(url)
+
     try:
-        if url.startswith("ass://"):
+        if "://" not in url:
+            req = urllib_request.Request("https://acestreamsearch.net/en/?q={}".format(url), data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
+            data = six.ensure_str(urllib_request.urlopen(req).read())
+            data=data.split("list-group\">")[1].split("</ul>")[0]
+            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+            patron = '<a href="(.*?)">(\\w*.*?)<'
+            for channel in re.findall(patron, data, re.I):
+                itemlist.append(Item(label=channel[1]+ " (acestreamsearch.net)",
+                            action='play',
+                            id=channel[0].replace("acestream://","")))
+            req = urllib_request.Request("https://search-ace.stream/search?query={}".format(url), data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
+            data = json.loads(six.ensure_str(urllib_request.urlopen(req).read()))
+            for i in range(len(data)):
+                itemlist.append(Item(label=data[i]["name"]+ " (search-ace.stream)",
+                            action='play',
+                            id=data[i]["content_id"]))
+        elif url.startswith("ass://"):
             itemlist = ass_decoder(url)
         else:
             req = urllib_request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
@@ -683,14 +698,6 @@ def search(url):
                         itemlist.append(Item(label="Arenavisión Canal " + n,
                                              action='play',
                                              url="https://ipfs.io" + ace))
-                if url.startswith('https://acestreamsearch.net'):
-                    data=data.split("list-group\">")[1].split("</ul>")[0]
-                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-                    patron = '<a href="(.*?)">(\\w*.*?)<'
-                    for channel in re.findall(patron, data, re.I):
-                        itemlist.append(Item(label=channel[1],
-                                             action='play',
-                                             id=channel[0].replace("acestream://","")))
                 elif url.startswith('https://pastebin') or "192.168." in url:
                     counter = 0
                     for it in data.split('\n'):
