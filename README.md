@@ -1,4 +1,4 @@
-# script.module.horus MOD
+# Horus kodi addon MOD (script.module.horus)
 
 This MOD allows reading channel list from deportesacestream720 at socialcreator.com. 
 
