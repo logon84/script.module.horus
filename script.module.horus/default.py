@@ -721,9 +721,9 @@ def search(url):
                         elif "acestream-link" in line:
                             id = line.split("href=\"")[1].split("\"")[0].replace("acestream://","")
                             itemlist.append(Item(label=name ,action='play',id=id))
-                elif "ciriaco-liart" in url:
+                elif "vercel.app" in url:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-                    patron = "<a href='(.*?)'>(\\w*.*?)</a>"
+                    patron = "<a href=[\'\"](.*?)[\'\"](?: target=\"_blank\"|)>(\\w*.*?)</a>"
                     for channel in re.findall(patron, data, re.I):
                         itemlist.append(Item(label=channel[1],
                                 action='play',
