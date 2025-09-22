@@ -714,9 +714,9 @@ def search(url):
                         if len(link["url"]) >= 40:
                             itemlist.append(Item(label=link["name"] ,action='play',id=link["url"].replace("acestream://","")))
                 elif "shickat" in url:
-                    data = data.split("id=\"canal-list\">")[1].split("<\/section>")[0]
+                    data = data.split("id=\"canal-list\">")[1].split('</section>')[0]
                     for line in data.split("\n"):
-                        if "canal-nombre" in line:
+                        if "\"canal-nombre\"" in line:
                             name = line.split(">")[1].split("<")[0]
                         elif "acestream-link" in line:
                             id = line.split("href=\"")[1].split("\"")[0].replace("acestream://","")
