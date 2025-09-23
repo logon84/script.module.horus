@@ -651,9 +651,9 @@ def ass_decoder(ass_id_or_json):
                 itemlist = itemlist + ass_decoder(json.dumps(jsitem["subLinks"]))
             elif "ref" in jsitem.keys():
                 itemlist = itemlist + ass_decoder(jsitem["ref"])
-            elif "url" in jsitem.keys() and len(jsitem["url"]) >= 40:
+            elif "url" in jsitem.keys() and len(re.findall('([0-9a-f]{40})', jsitem["url"], re.I)):
                 chan_name = jsitem["name"]
-                chan_id = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", jsitem["url"].replace("acestream://",""))
+                chan_id = re.findall('([0-9a-f]{40})', jsitem["url"], re.I)[0]
                 itemlist.append(Item(label=chan_name ,action='play',id=chan_id))
             else:
                 xbmc.log("HORUS - ASS decoder ignored item: " + str(jsitem))
