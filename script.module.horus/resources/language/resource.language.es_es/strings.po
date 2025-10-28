@@ -195,3 +195,7 @@ msgstr "Mostrar información Acestream en OSD"
 msgctxt "#30044"
 msgid "Remember last operating ID"
 msgstr "Recordar último ID operativo"
+
+msgctxt "#30045"
+msgid "Ace Engine"
+msgstr "Motor ace"
