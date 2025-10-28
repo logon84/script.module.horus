@@ -272,7 +272,10 @@ def clear_cache():
                 acestream_cachefolder = os.path.join(os.getenv("HOME"), '.ACEStream', 'cache', '.acestream_cache')
             else:
                 home = "/storage/emulated/0/"
-                acestream_cachefolder = '/storage/emulated/0/org.acestream.engine/.ACEStream/.acestream_cache'
+                if system_platform == 'android' and get_setting("ace_engine") == "org.free.aceserve":
+                    acestream_cachefolder = '/storage/emulated/0/org.free.aceserve/files/.ACEStream/'
+                else:
+                    acestream_cachefolder = '/storage/emulated/0/org.acestream.engine/.ACEStream/.acestream_cache'
 
         acestream_cachefolder = acestream_cachefolder if os.path.isdir(acestream_cachefolder) else None
 
@@ -363,13 +366,6 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
             xbmcgui.Dialog().ok(HEADING, translate(30015))
             return
 
-
-    if id and system_platform == 'android' and get_setting("reproductor_externo"):
-        AndroidActivity = 'StartAndroidActivity("","org.acestream.action.start_content","","acestream:?content_id=%s")' % id
-        logger("Abriendo " + AndroidActivity)
-        xbmc.executebuiltin(AndroidActivity)
-        return
-
     if not server.available:
         # Create an engine instance
         if system_platform == "windows":
@@ -407,30 +403,12 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
                 cmd_stop_acestream = [os.path.join(get_setting("install_acestream"), 'acestream.stop')]
 
         elif system_platform == 'android':
-            AndroidActivity = None
-            if id:
-                # Reproducir ID
-                AndroidActivity = 'StartAndroidActivity("","org.acestream.action.start_content","","acestream:?content_id=%s")' % id
-                logger("Abriendo " + AndroidActivity)
-                xbmc.executebuiltin(AndroidActivity)
-                return
+            if get_setting("ace_engine") == "org.free.aceserve":
+                AndroidActivity = 'StartAndroidActivity("%s","","","acestream://launch","","","","","crc6497882427a3fbfef9.AceStreamIntentActivity")' % get_setting("ace_engine")
             else:
-                import glob
-                for patron in ["/storage/emulated/0/Android/data/org.acestream.*", "/data/user/0/org.acestream.*"]:
-                    org_acestream = glob.glob(patron)
-                    if org_acestream:
-                        AndroidActivity = 'StartAndroidActivity("%s")' % org_acestream[0].split('/')[-1]
-                        break
-
-            if AndroidActivity:
-                if xbmcgui.Dialog().yesno(HEADING, translate(30041)):
-                    logger("Abriendo " + AndroidActivity)
-                    xbmc.executebuiltin(AndroidActivity)
-                else:
-                    return
-            else:
-                xbmcgui.Dialog().ok(HEADING, translate(30016))
-                return
+                AndroidActivity = 'StartAndroidActivity("%s","","","acestream://launch","","","","","org.acestream.engine.ContentStartActivity")' % get_setting("ace_engine")
+            logger("Abriendo " + AndroidActivity)
+            xbmc.executebuiltin(AndroidActivity)
 
         logger("acestream_executable= %s" % acestream_executable)
 
@@ -446,6 +424,15 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
                 return
 
     try:
+        if id and system_platform == 'android' and get_setting("reproductor_externo"):
+            if get_setting("ace_engine") == "org.free.aceserve":
+                AndroidActivity = 'StartAndroidActivity("","android.intent.action.VIEW","video/mp4","http://%s:%s/ace/getstream?id=%s")' % (get_setting("ip_addr"),get_setting("ace_port"),id)
+            else:
+                AndroidActivity = 'StartAndroidActivity("","org.acestream.action.start_content","","acestream:?content_id=%s")' % id
+            logger("Abriendo " + AndroidActivity)
+            xbmc.executebuiltin(AndroidActivity)
+            return
+
         d = xbmcgui.DialogProgress()
         d.create(HEADING, translate(30033))
         timedown = time.time() + get_setting("time_limit")
@@ -879,7 +866,7 @@ def run(item):
             listitem = xbmcgui.ListItem(item.label or item.title)
             listitem.setInfo('video', {'title': item.label or item.title, 'mediatype': 'video'})
             listitem.setArt(item.getart())
-            listitem.setInfo('video', {'plot': item.plot or item.id})
+            listitem.setInfo('video', {'plot': item.plot or item.id or item.url})
 
             if item.isPlayable:
                 listitem.setProperty('IsPlayable', 'true')
