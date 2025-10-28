@@ -8,7 +8,8 @@
         <setting id="remerber_last_id" type="bool" label="30044" default="true"/>
         <!-- Android -->
         <setting id="reproductor_externo" type="bool" label="30039" default="false" visible="System.Platform.Android"/>
-
+        <setting id="ace_engine" type="select" label="30045" values="org.acestream.media|org.free.aceserve" default="org.free.aceserve" visible="System.Platform.Android"/>
+        
         <!--Windows y linux no ubuntu -->
         <setting id="install_acestream" type="text" default="false" visible="false"/>
         <setting id="stop_acestream" type="bool" label="30042" default="false" visible="!eq(-1,false)+!System.Platform.Android"/>
