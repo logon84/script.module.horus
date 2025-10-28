@@ -195,3 +195,7 @@ msgstr ""
 msgctxt "#30044"
 msgid "Remember last operating ID"
 msgstr ""
+
+msgctxt "#30045"
+msgid "Ace Engine"
+msgstr ""
