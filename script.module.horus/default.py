@@ -406,7 +406,7 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
             if get_setting("ace_engine") == "org.free.aceserve":
                 AndroidActivity = 'StartAndroidActivity("%s","","","acestream://launch","","","","","crc6497882427a3fbfef9.AceStreamIntentActivity")' % get_setting("ace_engine")
             else:
-                AndroidActivity = 'StartAndroidActivity("%s","","","acestream://launch","","","","","org.acestream.engine.ContentStartActivity")' % get_setting("ace_engine")
+                AndroidActivity = 'StartAndroidActivity("","org.acestream.action.start_content","","acestream:?content_id=launch")'
             logger("Abriendo " + AndroidActivity)
             xbmc.executebuiltin(AndroidActivity)
 
