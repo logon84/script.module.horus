@@ -2,6 +2,7 @@
 <addon id="script.module.horus" name="Horus" version="1.2.5" provider-name="Caperucitaferoz">
     <requires>
         <import addon="script.module.six" />
+        <import addon="script.module.qrcode" />
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>executable</provides>

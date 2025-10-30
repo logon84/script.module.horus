@@ -24,6 +24,7 @@ from lib.utils import *
 import base64
 import gzip
 import json
+import qrcode
 
 from acestream.engine import Engine
 from acestream.stream import Stream
@@ -147,11 +148,11 @@ class MyPlayer(xbmc.Player):
         status = 'failed'
 
         listitem = xbmcgui.ListItem()
+        infotag = listitem.getVideoInfoTag()
         title = title or stream.filename or stream.id
-        info = {'title': title}
+        infotag.setTitle(title)
         if plot:
-            info['plot'] = plot
-        listitem.setInfo('video', info )
+            infotag.setPlot(plot)
         art = {'icon': iconimage if iconimage else os.path.join(runtime_path, 'resources', 'media', 'icono_aces_horus.png')}
         listitem.setArt(art)
 
@@ -863,9 +864,20 @@ def run(item):
     if itemlist:
         for item in itemlist:
             listitem = xbmcgui.ListItem(item.label or item.title)
-            listitem.setInfo('video', {'title': item.label or item.title, 'mediatype': 'video'})
-            listitem.setArt(item.getart())
-            listitem.setInfo('video', {'plot': item.plot or item.id or item.url})
+            infotag = listitem.getVideoInfoTag()
+            infotag.setTitle(item.label or item.title)
+            infotag.setMediaType('video') 
+            infotag.setPlot(item.plot or item.id or item.url)
+            
+            poster_url = os.path.join(runtime_path, 'icon.png')
+            if item.id and "://" not in item.id and get_setting("show_qr_codes"):
+                qr_data = "acestream://" + item.id
+                qr_img = qrcode.make(qr_data)
+                poster_url = xbmcvfs.translatePath('special://temp') + item.id + '.png'
+                qr_img.save(poster_url)
+            art = {'icon': os.path.join(runtime_path, 'icon.png'), 'poster': poster_url}
+            listitem.setArt(art)
+
 
             if item.isPlayable:
                 listitem.setProperty('IsPlayable', 'true')
