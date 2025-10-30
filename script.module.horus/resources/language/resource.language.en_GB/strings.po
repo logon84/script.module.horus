@@ -199,3 +199,7 @@ msgstr ""
 msgctxt "#30045"
 msgid "Ace Engine"
 msgstr ""
+
+msgctxt "#30046"
+msgid "Show QR"
+msgstr ""
