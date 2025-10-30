@@ -786,7 +786,7 @@ def run(item):
     if not item.action:
         logger("Item sin acción")
         return
-
+    logger("Ejecutando " + str(item))
     if item.action == "mainmenu":
         itemlist = mainmenu()
 
@@ -858,8 +858,7 @@ def run(item):
         elif infohash:
             acestreams(infohash=infohash)
 
-        xbmc.executebuiltin('Container.Refresh')
-
+        #xbmc.executebuiltin('Container.Refresh')
 
     if itemlist:
         for item in itemlist:
@@ -888,7 +887,7 @@ def run(item):
                 isFolder= isFolder,
                 totalItems=len(itemlist)
             )
-        
+
         xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_NONE)
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
