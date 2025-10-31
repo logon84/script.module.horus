@@ -787,6 +787,7 @@ def run(item):
     if not item.action:
         logger("Item sin acción")
         return
+
     logger("Ejecutando " + str(item))
     if item.action == "mainmenu":
         itemlist = mainmenu()
@@ -822,7 +823,7 @@ def run(item):
             else:
                 xbmcgui.Dialog().ok(HEADING,  translate(30031) % url_list)
         else:
-            return
+            itemlist.append(Item(label="",action='',id=''))
 
     elif item.action == 'open_settings':
             xbmcaddon.Addon().openSettings()
@@ -841,8 +842,8 @@ def run(item):
             input = xbmcgui.Dialog().input(translate(30022), last_id if get_setting("remerber_last_id") else "")
             if re.findall('^(http|magnet)', input, re.I):
                 url = input
-            else:
-                id = input.replace("acestream://","")
+            elif re.findall('([0-9a-f]{40})', input, re.I):
+                id = re.findall('([0-9a-f]{40})', input, re.I)[0]
 
         if id:
             acestreams(id=id)
@@ -886,7 +887,7 @@ def run(item):
             elif isinstance(item.isFolder, bool):
                 isFolder = item.isFolder
 
-            elif not item.action:
+            elif item.action in ["", "kill", "play", "open_settings"]:
                 isFolder = False
 
             else:
