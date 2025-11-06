@@ -812,7 +812,7 @@ def run(item):
             ids = list()
             for url in url_list.split(";"):
                 if url:
-                    tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='',url=url))
+                    tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='',id=url))
                     tmp_itemlist = tmp_itemlist + search(url)
             for item in tmp_itemlist:
                 if item.id not in ids:
@@ -953,3 +953,4 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
+
