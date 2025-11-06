@@ -405,7 +405,7 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
 
         elif system_platform == 'android':
             if get_setting("ace_engine") == "org.free.aceserve":
-                AndroidActivity = 'StartAndroidActivity("%s","","","acestream://launch","","","","","crc6497882427a3fbfef9.AceStreamIntentActivity")' % get_setting("ace_engine")
+                AndroidActivity = 'StartAndroidActivity("%s","","","acestream://","","","","","crc6497882427a3fbfef9.AceLinkHandlerActivity")' % get_setting("ace_engine")
             else:
                 AndroidActivity = 'StartAndroidActivity("","org.acestream.action.start_content","","acestream:?content_id=launch")'
             logger("Abriendo " + AndroidActivity)
@@ -812,7 +812,7 @@ def run(item):
             ids = list()
             for url in url_list.split(";"):
                 if url:
-                    tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='play',id=url))
+                    tmp_itemlist.append(Item(label=">>>>>>>>>> Source [{}] <<<<<<<<<<".format(url) ,action='',url=url))
                     tmp_itemlist = tmp_itemlist + search(url)
             for item in tmp_itemlist:
                 if item.id not in ids:
