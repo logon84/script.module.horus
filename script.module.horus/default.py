@@ -405,7 +405,7 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
 
         elif system_platform == 'android':
             if get_setting("ace_engine") == "org.free.aceserve":
-                AndroidActivity = 'StartAndroidActivity("%s","","","acestream://","","","","","crc6497882427a3fbfef9.AceLinkHandlerActivity")' % get_setting("ace_engine")
+                AndroidActivity = 'StartAndroidActivity("%s","","","acestream://","","","","","crc644baf9324e22bb51e.LinkHandlerActivity")' % get_setting("ace_engine")
             else:
                 AndroidActivity = 'StartAndroidActivity("","org.acestream.action.start_content","","acestream:?content_id=launch")'
             logger("Abriendo " + AndroidActivity)
@@ -953,4 +953,3 @@ if __name__ == '__main__':
         item = Item(action='mainmenu')
 
     run(item)
-
