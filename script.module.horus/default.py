@@ -610,9 +610,11 @@ def mainmenu():
     return itemlist
 
 
+ass_ids = list()
 def ass_decoder(ass_id_or_json):
     from six.moves import urllib_request
 
+    global ass_ids
     itemlist = list()
     is_json = 1
     try:
@@ -621,17 +623,19 @@ def ass_decoder(ass_id_or_json):
         is_json = 0
     if not is_json:
     #input is  ASS ID and not json
-        req = urllib_request.Request("https://dns.google/resolve?name={}.elcano.top&type=TXT".format(ass_id_or_json.replace("ass://","")), data=None, headers={'Accept': 'application/json'})
-        response = json.loads(six.ensure_str(urllib_request.urlopen(req).read()))
-        if "Answer" in response.keys():
-            for i in range(len(response["Answer"])):
-                if "H4sIAAAAAAAA" in response["Answer"][i]["data"]:
-                #gz data
-                    json_data = gzip.decompress(base64.b64decode(response["Answer"][i]["data"])).decode("utf-8")
-                else:
-                #base64
-                    json_data = base64.b64decode(response["Answer"][i]["data"]).decode("utf-8")
-                itemlist = itemlist + ass_decoder(json_data)
+        if ass_id_or_json not in ass_ids:
+            ass_ids.append(ass_id_or_json)
+            req = urllib_request.Request("https://dns.google/resolve?name={}.elcano.top&type=TXT".format(ass_id_or_json.replace("ass://","")), data=None, headers={'Accept': 'application/json'})
+            response = json.loads(six.ensure_str(urllib_request.urlopen(req).read()))
+            if "Answer" in response.keys():
+                for i in range(len(response["Answer"])):
+                    if "H4sIAAAAAAAA" in response["Answer"][i]["data"]:
+                    #gz data
+                        json_data = gzip.decompress(base64.b64decode(response["Answer"][i]["data"])).decode("utf-8")
+                    else:
+                    #base64
+                        json_data = base64.b64decode(response["Answer"][i]["data"]).decode("utf-8")
+                    itemlist = itemlist + ass_decoder(json_data)
     else:
         for i in range(len(json_data)):
             jsitem = json_data[i]
@@ -675,6 +679,8 @@ def search(url):
                             action='play',
                             id=data[i]["content_id"]))
         elif url.startswith("ass://"):
+            global ass_ids
+            ass_ids = list()
             itemlist = ass_decoder(url)
         else:
             req = urllib_request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
@@ -703,14 +709,6 @@ def search(url):
                     for link in data["links"]:
                         if len(link["url"]) >= 40:
                             itemlist.append(Item(label=link["name"] ,action='play',id=link["url"].replace("acestream://","")))
-                elif "shickat" in url:
-                    data = data.split("id=\"canal-list\">")[1].split('</section>')[0]
-                    for line in data.split("\n"):
-                        if "\"canal-nombre\"" in line:
-                            name = line.split(">")[1].split("<")[0]
-                        elif "acestream-link" in line:
-                            id = line.split("href=\"")[1].split("\"")[0].replace("acestream://","")
-                            itemlist.append(Item(label=name ,action='play',id=id))
                 elif "vercel.app" in url:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                     patron = "<a href=[\'\"](.*?)[\'\"](?: target=\"_blank\"|)>(\\w*.*?)</a>"
