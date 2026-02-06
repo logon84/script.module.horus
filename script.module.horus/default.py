@@ -687,35 +687,32 @@ def search(url):
             data = six.ensure_str(urllib_request.urlopen(req).read())
 
             if data:
-                if url.startswith('https://ipfs.io/'):
-                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-                    patron = '<a href="(/ipfs/[^"]+acelive)">(\d*)'
-                    for ace,n in re.findall(patron, data, re.I):
-                        itemlist.append(Item(label="Arenavisión Canal " + n,
-                                             action='play',
-                                             url="https://ipfs.io" + ace))
-                elif url.startswith('https://pastebin') or "192.168." in url:
-                    counter = 0
-                    for it in data.split('\n'):
-                        if len(it) > 1:
-                            if (counter % 2) == 0:
-                                name = it
-                            else:
-                                id = re.findall('([0-9a-f]{40})', it, re.I)[0]
-                                itemlist.append(Item(label=name ,action='play',id=id))
-                            counter = counter + 1
+                if "pastebin" in url or ".txt" in url:
+                    data = data.replace("\n\n", "\n") #remove empty lines
+                    data = data.replace("acestream://", "") #remove protocol
+                    patron = "(?:.*?)======\n(.*)"
+                    tmp = re.findall(patron, data, re.DOTALL) #remove text before "========"
+                    if len(tmp) > 0:
+                        data = tmp[0]
+                    data = re.sub(r'(?m)^\===.*\n?', '', data) #remove lines starting with "==="
+                    for it in re.findall(r'(.+?)\n([0-9a-f]{40})(?=\n|$)', data, re.DOTALL):
+                        if len(it) == 2 and len(it[1]) > 0:
+                                    name = it[0].replace("\n","")
+                                    id = it[1]
+                                    itemlist.append(Item(label=name ,action='play',id=id))
                 elif "elcano" in url:
                     data = json.loads(data.split("linksData = ")[1].split(";")[0])
                     for link in data["links"]:
                         if len(link["url"]) >= 40:
                             itemlist.append(Item(label=link["name"] ,action='play',id=link["url"].replace("acestream://","")))
-                elif "vercel.app" in url:
+                elif "vercel.app" in url or "netlify.app" in url:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-                    patron = "<a href=[\'\"](.*?)[\'\"](?: target=\"_blank\"|)>(\\w*.*?)</a>"
+                    data = data.replace("acestream://","")
+                    patron = "<a href=[\'\"]([0-9a-f]{40})[\'\"](?:.*?)>(?: |)(\\w*.*?)(?: |)<"
                     for channel in re.findall(patron, data, re.I):
                         itemlist.append(Item(label=channel[1],
                                 action='play',
-                                id=channel[0].replace("acestream://","")))
+                                id=channel[0]))
                 else:
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
                     try:
