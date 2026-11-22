@@ -1,7 +1,5 @@
 import json
 
-from distutils.version import LooseVersion
-
 try:
   from urllib.request import urlopen
   from urllib.parse import urlencode
@@ -96,6 +94,9 @@ class Server(Request):
   def getversion(self):
     return self.getservice(method='get_version')
 
+  def parse_version(self,v):
+    return tuple(map(int, v.split(".")))
+
   def getserver(self, **params):
     return self.get('server/api', **params)
 
@@ -109,7 +110,7 @@ class Server(Request):
     is_hls = params.pop('hls', False)
     apiurl = 'manifest.m3u8' if is_hls else 'getstream'
 
-    if LooseVersion(self.version) < LooseVersion('3.1.29'):
+    if self.parse_version(self.version) < self.parse_version('3.1.29'):
       params['sid'] = params.pop('pid')
 
     return self.get('ace/{0}'.format(apiurl), format='json', **params)
