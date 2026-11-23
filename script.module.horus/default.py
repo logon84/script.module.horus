@@ -122,13 +122,14 @@ class OSD(object):
         except:
             pass
 
+_my_player_instance = None
 
 class MyPlayer(xbmc.Player):
-    _instance = None
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(MyPlayer, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
+        global _my_player_instance
+        if _my_player_instance is None:
+            _my_player_instance = super(MyPlayer, cls).__new__(cls, *args, **kwargs)
+        return _my_player_instance
 
     def __init__(self):
         logger("MyPlayer init")
@@ -382,6 +383,9 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
                     # Ubuntu, arch Linux, fedora, mint etc
                     if os.path.exists('/snap/acestreamplayer'):
                         acestream_executable = 'snap run acestreamplayer.engine'
+                        cmd_stop_acestream = ["pkill", "acestream"]
+                    elif os.path.exists('/var/lib/flatpak/app/org.Acestream.engine'):
+                        acestream_executable = 'flatpak run --branch=master --arch=x86_64 --command=acestream.engine org.Acestream.engine'
                         cmd_stop_acestream = ["pkill", "acestream"]
                     else:
                         xbmcgui.Dialog().ok(HEADING,translate(30027))
