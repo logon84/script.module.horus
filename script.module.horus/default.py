@@ -381,15 +381,29 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
                     cmd_stop_acestream = ["pkill", "acestream"]
                 else:
                     # Ubuntu, arch Linux, fedora, mint etc
-                    if os.path.exists('/snap/acestreamplayer'):
+                    if os.path.exists('/.flatpak-info'):
+                        #kodi flatpak version is running. It should run flatpak acestreamplayer and needs pre running this commands to work:
+                        #flatpak override --user --filesystem=/var/lib/flatpak/app:ro tv.kodi.Kodi
+                        #flatpak override --user --talk-name=org.freedesktop.Flatpak tv.kodi.Kodi
+                        logger("Kodi flatpak detected")
+                        if os.path.exists('/var/lib/flatpak/app/org.Acestream.engine'):
+                            logger("acestream flatpak detected from sandbox")
+                            acestream_executable = 'flatpak-spawn --host flatpak run org.Acestream.engine'
+                            cmd_stop_acestream = ['flatpak-spawn', '--host', 'flatpak', 'kill', 'org.Acestream.engine']
+                        else:
+                            xbmcgui.Dialog().ok(HEADING,translate(30027))
+                            raise MotorNoDisponible('sin el flatpak de acestreamplayer')
+                    elif os.path.exists('/snap/acestreamplayer'):
+                        logger("acestream system snap detected")
                         acestream_executable = 'snap run acestreamplayer.engine'
                         cmd_stop_acestream = ["pkill", "acestream"]
                     elif os.path.exists('/var/lib/flatpak/app/org.Acestream.engine'):
+                        logger("acestream system flatpak detected")
                         acestream_executable = 'flatpak run --branch=master --arch=x86_64 --command=acestream.engine org.Acestream.engine'
                         cmd_stop_acestream = ["pkill", "acestream"]
                     else:
                         xbmcgui.Dialog().ok(HEADING,translate(30027))
-                        return
+                        raise MotorNoDisponible('sin el snap/flatpak de acestreamplayer')
 
             elif arquitectura == 'arm' and not root:
                 try:
@@ -555,7 +569,7 @@ def acestreams(id=None, url=None, infohash=None, title="", iconimage="", plot=""
         stream.stop()
 
     # stop Engine
-    if get_setting("stop_acestream", False) or get_setting("linux_id") == 'ubuntu':
+    if get_setting("stop_acestream", False) or get_setting("linux_id") in ['ubuntu', 'linuxmint']:
         kill_process()
 
 
